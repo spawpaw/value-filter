@@ -1,0 +1,3 @@
+desensitization:
+  service:
+    throws-on-fail: true
