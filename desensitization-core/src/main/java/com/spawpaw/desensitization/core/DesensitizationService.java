@@ -11,6 +11,7 @@ import javax.validation.groups.Default;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,13 +51,15 @@ public class DesensitizationService {
         if (object == null) {
             return;
         }
+
         try {
             for (Field declaredField : object.getClass().getDeclaredFields()) {
                 declaredField.setAccessible(true);
                 Object originalFieldValue = declaredField.get(object);
 
+                //递归脱敏
                 Sensitized sensitized = AnnotationUtils.findAnnotation(declaredField, Sensitized.class);
-                if (sensitized != null) {//递归脱敏
+                if (sensitized != null) {
                     Class<?>[] intersection = getIntersection(groups, sensitized.groups());
                     if (intersection.length > 0) {
                         if (sensitized.useSameGroupsForChild()) {
@@ -69,7 +72,6 @@ public class DesensitizationService {
                 }
                 SensitiveInfo sensitiveInfo = AnnotationUtils.findAnnotation(declaredField, SensitiveInfo.class);
                 if (sensitiveInfo != null) {
-                    Class<?>[] intersection = null;
                     Class<?>[] groupsOnAnnotation = null;
                     //分组
                     for (Annotation declaredAnnotation : declaredField.getDeclaredAnnotations()) {
@@ -78,15 +80,7 @@ public class DesensitizationService {
                             break;
                         }
                     }
-                    //如果字段上没有分组，则添加默认分组Default.class
-                    if (groupsOnAnnotation == null || groupsOnAnnotation.length == 0) {
-                        groupsOnAnnotation = new Class[]{Default.class};
-                    }
-                    if (groups.length == 0) {//如果传入的分组参数也为空，则也为其添加默认分组
-                        groups = groupsOnAnnotation;
-                    }
-                    intersection = getIntersection(groupsOnAnnotation, groups);
-                    if (intersection.length == 0) {//如果该字段不处于分组中（交集为空）则跳过该字段
+                    if (!hasIntersection(groupsOnAnnotation, groups)) {//如果该字段不处于分组中（交集为空）则跳过该字段
                         continue;
                     }
 
@@ -118,13 +112,22 @@ public class DesensitizationService {
         return false;
     }
 
+    /**
+     * 判断两个分组是否有交集
+     */
+    private boolean hasIntersection(Class<?>[] groupA, Class<?>[] groupB) {
+        return getIntersection(groupA, groupB).length > 0;
+    }
 
     /**
-     * 求两个数组交集
+     * 求两个分组的交集，如果某一个组是空组，则为其加上默认的元素Default.class
      */
     private Class<?>[] getIntersection(Class<?>[] groupA, Class<?>[] groupB) {
-        if (groupA == null || groupB == null || groupA.length == 0 || groupB.length == 0) {
-            return new Class<?>[0];
+        if (groupA == null || groupA.length == 0) {
+            groupA = new Class<?>[]{Default.class};
+        }
+        if (groupB == null || groupB.length == 0) {
+            groupB = new Class<?>[]{Default.class};
         }
         Set<Class<?>> common = new HashSet<>();
         Set<Class<?>> setB = new HashSet<>(Arrays.asList(groupB));
