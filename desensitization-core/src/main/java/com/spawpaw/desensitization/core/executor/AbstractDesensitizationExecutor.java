@@ -3,6 +3,7 @@ package com.spawpaw.desensitization.core.executor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,10 @@ public abstract class AbstractDesensitizationExecutor<T> {
 
         Class<T> entityClass = (Class<T>) ((ParameterizedType) superclass.getGenericSuperclass()).getActualTypeArguments()[0];
         return entityClass.isAssignableFrom(field.getType());
+    }
+
+    public void processCollections(Field field, Collection collection) {
+
     }
 
     /**

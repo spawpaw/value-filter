@@ -16,9 +16,9 @@ public class BaseStringDesensitizationExecutor extends AbstractStringDesensitiza
             return null;
         SensitiveString sensitiveString = getMetaAnnotation(field);
         if (value.length() >= sensitiveString.preservePrefix() + sensitiveString.preserveSuffix()) {
-            return value.substring(0, sensitiveString.preservePrefix() - 1)
+            return value.substring(0, sensitiveString.preservePrefix())
                     + getRepeatString(sensitiveString.replacement(), value.length() - sensitiveString.preservePrefix() - sensitiveString.preserveSuffix(), sensitiveString.aggregate())
-                    + value.substring(value.length() - sensitiveString.preserveSuffix(), value.length() - 1);
+                    + value.substring(value.length() - sensitiveString.preserveSuffix());
         } else {
             return value;
         }

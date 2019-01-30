@@ -11,6 +11,8 @@ import javax.validation.groups.Default;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class DesensitizationService {
@@ -43,6 +45,8 @@ public class DesensitizationService {
         desensitize(newObj, groups);
     }
 
+    List<Class<? extends Annotation>> holder = Collections.singletonList(SensitiveInfo.class);
+
     /**
      * 对指定对象进行脱敏
      *
@@ -54,7 +58,8 @@ public class DesensitizationService {
         }
         //如果对象类被加上了注解
         Map<Class<? extends Annotation>, Annotation> annotationMap = new HashMap<>();
-        SensitiveInfo sensitiveInfo = AnnotationUtils.findAnnotation(object.getClass(), SensitiveInfo.class);
+        findAnnotationsFromClass(object.getClass(), annotationMap, holder, false);
+        SensitiveInfo sensitiveInfo = (SensitiveInfo) annotationMap.get(SensitiveInfo.class);
         if (sensitiveInfo != null) {//此时只需要从该类上获取注解
             AbstractDesensitizationExecutor executor = beanFactory.getBean(sensitiveInfo.executor());
             findAnnotationsForExecutor(object.getClass(), annotationMap, executor);
@@ -90,7 +95,8 @@ public class DesensitizationService {
                     }
                     continue;
                 }
-                sensitiveInfo = AnnotationUtils.findAnnotation(declaredField, SensitiveInfo.class);
+                findAnnotationsFromClass(declaredField, annotationMap, holder, false);
+                sensitiveInfo = (SensitiveInfo) annotationMap.get(SensitiveInfo.class);
                 if (sensitiveInfo != null) {
                     Class<?>[] groupsOnAnnotation = null;
                     //分组检查
@@ -119,6 +125,22 @@ public class DesensitizationService {
                             Object desensitizedFieldValue = executor.desensitize(object, declaredField, annotationMap, originalFieldValue);
                             declaredField.set(object, desensitizedFieldValue);
                         }
+                    } else if (Collection.class.isAssignableFrom(declaredField.getType())) {
+                        Collection collection = (Collection) originalFieldValue;
+                        List<Object> cacheResult = new LinkedList<>();
+                        collection.forEach(o -> {
+                            if (o != null || executor.desensitizeForNullValues()) {
+                                Object desensitizedFieldValue = executor.desensitize(object, declaredField, annotationMap, o);
+                                cacheResult.add(desensitizedFieldValue);
+                            }
+                        });
+                        if (collection.getClass().toString().equals("class java.util.Arrays$ArrayList")){
+                            declaredField.set(object,cacheResult);
+                        }else {
+                            collection.clear();
+                            collection.addAll(cacheResult);
+                        }
+
                     } else {
                         throw new RuntimeException("在不支持的字段上添加了脱敏注解");
                     }
@@ -138,9 +160,16 @@ public class DesensitizationService {
         }
     }
 
-    private void findAnnotationsFromClass(AnnotatedElement annotatedElement, Map<Class<? extends Annotation>, Annotation> annotationMap, List<Class<Annotation>> extraAnnotations, boolean necessary) {
+    private void findAnnotationsFromClass(AnnotatedElement annotatedElement, Map<Class<? extends Annotation>, Annotation> annotationMap, List<Class<? extends Annotation>> extraAnnotations, boolean necessary) {
         for (Object extraAnnotation : extraAnnotations) {
             Annotation annotation = AnnotationUtils.findAnnotation(annotatedElement, (Class<? extends Annotation>) extraAnnotation);
+            if (annotation == null && annotatedElement instanceof Field) {
+                Field field = (Field) annotatedElement;
+
+                Type type = field.getGenericType();
+                Type genericType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                System.out.println(Arrays.toString(genericType.getClass().getAnnotations()));
+            }
             if (necessary && annotation == null) {
                 throw new RuntimeException(String.format("类%s上缺少注解%s", annotatedElement, extraAnnotation));
             }
