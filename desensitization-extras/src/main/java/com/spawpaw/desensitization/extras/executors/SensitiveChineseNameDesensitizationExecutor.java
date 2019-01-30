@@ -2,11 +2,12 @@ package com.spawpaw.desensitization.extras.executors;
 
 import com.spawpaw.desensitization.core.annotations.SensitiveString;
 import com.spawpaw.desensitization.core.executor.AbstractStringDesensitizationExecutor;
+import com.spawpaw.desensitization.extras.string.SensitiveChineseName;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 
 @Component
 public class SensitiveChineseNameDesensitizationExecutor extends AbstractStringDesensitizationExecutor {
@@ -24,10 +25,8 @@ public class SensitiveChineseNameDesensitizationExecutor extends AbstractStringD
     ));
 
     @Override
-    public String desensitize(Object object, Field field, String value) {
-        if (value == null)
-            return null;
-        SensitiveString metaAnnotation = getMetaAnnotation(field);
+    public String desensitize(Object object, Field field, Map<Class<? extends Annotation>, ? extends Annotation> annotationMap, String value) {
+        SensitiveString metaAnnotation = (SensitiveString) annotationMap.get(SensitiveString.class);
         if (value.length() <= 1) {//单字，不脱敏（本来就不会这样起名字，脱不脱敏无所谓）
             return value;
         } else if (value.length() == 2) {//双字，隐藏后一个字
@@ -45,5 +44,13 @@ public class SensitiveChineseNameDesensitizationExecutor extends AbstractStringD
                 return value.substring(0, 2) + metaAnnotation.replacement() + value.charAt(value.length() - 1);
             }
         }
+    }
+
+    @Override
+    public List<Class<? extends Annotation>> necessaryAnnotations() {
+        List<Class<? extends Annotation>> list = new LinkedList<>();
+        list.add(SensitiveChineseName.class);
+        list.add(SensitiveString.class);
+        return list;
     }
 }

@@ -1,7 +1,10 @@
 package com.spawpaw.desensitization.core.executor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 抽象脱敏器
@@ -30,12 +33,36 @@ public abstract class AbstractDesensitizationExecutor<T> {
     /**
      * 进行脱敏
      *
-     * @param object 上下文对象
-     * @param field  字段反射信息
-     * @param value  要进行脱敏的值
-     * @return 脱敏后的信息
+     * @param object        上下文对象。
+     * @param field         字段反射信息。可能为空，不推荐从这里获取注解
+     * @param annotationMap 从所有与字段相关的地方获取到的该方法所声明的所需要的注解，以及本工具所提供的元注解
+     * @param value         要进行脱敏的值
+     * @return
      */
-    public abstract T desensitize(Object object, Field field, T value);
+    public abstract T desensitize(Object object, Field field, Map<Class<? extends Annotation>, ? extends Annotation> annotationMap, T value);
 
+    /**
+     * 所脱敏的对象的必要注解。
+     * 将会在脱敏之前从各种与对象相关的地方提取这些注解，如果有任意一个没找到，则抛出异常，不进行脱敏。
+     */
+    public List<Class<? extends Annotation>> necessaryAnnotations() {
+        return null;
+    }
+
+    /**
+     * 所脱敏的对象可以附加的注解，
+     * 将会在脱敏之前从各种与对象相关的地方提取这些注解，如果没有这些注解也不会抛出异常。
+     */
+    public List<Class<? extends Annotation>> extraAnnotations() {
+        return null;
+    }
+
+    /**
+     * 本脱敏器是否会处理null值
+     * 如果返回false，则不会处理null值
+     */
+    public boolean desensitizeForNullValues() {
+        return false;
+    }
 
 }

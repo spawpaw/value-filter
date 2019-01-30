@@ -13,7 +13,12 @@ import java.lang.annotation.Target;
  * 标记指定字段包含敏感数据，需要进行脱敏，并指定脱敏器
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+@Target({
+        ElementType.FIELD/*字段*/
+        , ElementType.ANNOTATION_TYPE/*注解*/
+        , ElementType.LOCAL_VARIABLE/*方法内变量*/
+        , ElementType.TYPE_USE/*泛型声明，如List<@SensitiveInfo() String>*/
+})
 public @interface SensitiveInfo {
     /**
      * 使用哪种脱敏器进行脱敏

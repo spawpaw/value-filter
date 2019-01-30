@@ -1,6 +1,6 @@
 package com.spawpaw.desensitization.core.enums;
 
-public enum  CloneLevel {
+public enum CloneLevel {
     /**
      * 不拷贝
      */
@@ -13,5 +13,9 @@ public enum  CloneLevel {
      * 深拷贝
      */
     DEEP_CLONE,
+    /**
+     * 先使用json序列化，再反序列化
+     */
+    JSON_CLONE,
 
 }

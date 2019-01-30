@@ -5,13 +5,15 @@ import com.spawpaw.desensitization.starter.test.annotation.MySensitiveType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Map;
 
 @Component
 public class MySensitiveTypeExecutor extends AbstractDesensitizationExecutor<Integer> {
     @Override
-    public Integer desensitize(Object object, Field field, Integer value) {
-        MySensitiveType mySensitiveTypeAnnotation = AnnotationUtils.findAnnotation(field, MySensitiveType.class);
+    public Integer desensitize(Object object, Field field, Map<Class<? extends Annotation>, ? extends Annotation> annotationMap, Integer value) {
+        MySensitiveType mySensitiveTypeAnnotation = (MySensitiveType) annotationMap.get(MySensitiveType.class);
         if (mySensitiveTypeAnnotation == null) {
             //这个异常在本示例中永远不会抛出，因为没有将MySensitiveTypeExecutor使用到其他脱敏注解上
             //
