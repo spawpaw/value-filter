@@ -4,22 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.spawpaw.desensitization</groupId>
-    <artifactId>desensitization-parent</artifactId>
+    <groupId>com.spawpaw</groupId>
+    <artifactId>value-filter-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0</version>
 
     <properties>
         <hibernate-validator.version>6.0.11.Final</hibernate-validator.version>
-        <desensitization.version>1.0.0.SNAPSHOT</desensitization.version>
+        <value-filter.version>1.0.0.SNAPSHOT</value-filter.version>
     </properties>
 
     <modules>
-        <module>desensitization-core</module>
-        <module>desensitization-extras</module>
-        <module>desensitization-spring-boot-autoconfigure</module>
-        <module>desensitization-spring-boot-starter</module>
-        <module>desensitization-spring-boot-starter-test</module>
+        <module>value-filter-core</module>
+        <module>value-filter-extras</module>
+        <module>value-filter-spring-boot-autoconfigure</module>
+        <module>value-filter-spring-boot-starter</module>
+        <module>value-filter-spring-boot-starter-test</module>
     </modules>
 
     <dependencies>
