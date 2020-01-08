@@ -10,7 +10,7 @@
     <version>1.0.0</version>
 
     <properties>
-        <hibernate-validator.version>6.0.11.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.1.0.Final</hibernate-validator.version>
         <value-filter.version>1.0.0.SNAPSHOT</value-filter.version>
     </properties>
 
